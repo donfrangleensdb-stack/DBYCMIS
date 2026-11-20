@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="ta">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>DBYC - Don Bosco Youth Centre | Basin Bridge, Chennai - 600 012</title>
+
+  <!-- PWA & Native App Store Meta Tags -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#002b66">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="DBYC Portal">
+  <meta name="application-name" content="DBYC Basin Bridge">
+  <meta name="msapplication-TileColor" content="#002b66">
+  <link rel="icon" type="image/png" href="assets/logo.png">
+  <link rel="apple-touch-icon" href="assets/logo.png">
+
+  <!-- Modular Stylesheets (Fast Loading, Mobile & Desktop Adaptive) -->
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/responsive.css">
+</head>
+<body>
+
+  <!-- ==============================================================================
+       1. AUTHENTICATION / LOGIN VIEW (Strictly Isolated - Cannot bleed into app)
+       ============================================================================== -->
+  <div id="loginView">
+    <div class="login-card">
+      <div class="login-card-accent"></div>
+
+      <!-- Institutional Crest & Title -->
+      <div class="login-brand-header">
+        <img src="assets/logo.png" class="login-brand-logo" alt="DBYC Official Crest">
+        <div class="login-brand-title">
+          <h3>DON BOSCO YOUTH CENTRE</h3>
+          <p>Basin Bridge, Chennai - 600 012</p>
+        </div>
+      </div>
+
+      <h2 class="login-title">Member Sign In</h2>
+      <p class="login-subtitle">Enter your Member ID, Mobile, or Role PIN</p>
+
+      <form id="loginForm">
+        <div class="input-floating-group">
+          <input type="text" id="loginUsernameInput" class="input-floating-field" placeholder=" " autocomplete="username" required>
+          <label class="input-floating-label">Member ID / Mobile Number / Role</label>
+        </div>
+
+        <div class="input-floating-group">
+          <input type="password" id="loginPinInput" class="input-floating-field" placeholder=" " autocomplete="current-password" required>
+          <label class="input-floating-label">Security PIN (4–8 Digits)</label>
+          <button type="button" class="btn-toggle-pin-visibility" onclick="const p=document.getElementById('loginPinInput'); p.type = p.type==='password'?'text':'password';" title="Show/Hide PIN">👁️</button>
+        </div>
+
+        <button type="submit" class="login-btn-primary">
+          <span>Sign In to Portal</span>
+          <span>➔</span>
+        </button>
+
+        <div class="login-options-row">
+          <button type="button" class="link-button" onclick="window.DBYC_APP.openModal('publicApplyModal')">New Candidate? Register</button>
+          <button type="button" class="link-button" onclick="window.DBYC_APP.showToast('ℹ️ For PIN resets, contact Rev. Fr. Director or use the Centre Desk.')">Forgot PIN?</button>
+        </div>
+      </form>
+
+      <!-- Public Candidate Application Quick Access -->
+      <div class="public-apply-box">
+        <button type="button" class="btn-public-apply" onclick="window.DBYC_APP.openModal('publicApplyModal')">
+          📝 2026 New Member Application (Public Portal)
+        </button>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ==============================================================================
+       2. MASTER SINGLE PAGE APP SHELL (#mainApp)
+       ============================================================================== -->
+  <div id="mainApp" class="hidden">
+
+    <!-- Top Sticky Header Bar -->
+    <header class="top-navbar">
+      <div class="nav-left">
+        <button id="hamburgerBtn" class="hamburger-btn" aria-label="Open Navigation Menu">
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
+
+        <button id="topNavBackBtn" class="top-nav-back-btn" style="display:none;" title="Back to Previous View">
+          ◀ Back
+        </button>
+
+        <div class="nav-brand-pill" onclick="window.DBYC_ROUTER.switchView('dashboard')">
+          <img src="assets/logo.png" class="nav-brand-logo" alt="DBYC Logo">
+          <div class="nav-brand-text">
+            <h2>DBYC PORTAL</h2>
+            <small>Basin Bridge, Chennai</small>
+          </div>
+        </div>
+      </div>
+
+      <div class="nav-right">
+        <div class="user-badge-pill" onclick="window.DBYC_ROUTER.switchView('profile')" style="cursor:pointer;" title="View My Profile">
+          <img src="assets/icon-192.png" class="user-badge-avatar" id="navUserBadgeAvatar" alt="Avatar">
+          <span class="user-badge-name" id="navUserBadgeName">Member</span>
+          <span style="font-size:0.68rem; font-weight:800; background:#e0f2fe; color:#0369a1; padding:1px 6px; border-radius:4px;" id="navUserBadgeRole">MEMBER</span>
+        </div>
+        <button class="btn-nav-logout" onclick="window.DBYC_AUTH.logout()" title="Sign Out">Logout</button>
+      </div>
+    </header>
+
+    <!-- Sidebar Drawer Backdrop -->
+    <div id="drawerBackdrop" class="drawer-backdrop"></div>
+
+    <!-- Sidebar Slide-over Drawer -->
+    <aside id="sidebarDrawer" class="sidebar-drawer">
+      <div class="drawer-header">
+        <div class="drawer-user-info">
+          <img src="assets/icon-192.png" class="drawer-user-avatar" alt="User Avatar">
+          <div>
+            <h4 style="font-size:0.92rem; font-weight:800; margin:0;">DBYC Master Portal</h4>
+            <small style="color:#fde047; font-weight:700;">Basin Bridge, CH-12</small>
+          </div>
+        </div>
+        <button onclick="window.DBYC_ROUTER.closeDrawer()" style="background:none; border:none; color:#ffffff; font-size:1.4rem; cursor:pointer;">&times;</button>
+      </div>
+
+      <ul class="drawer-menu">
+        <li class="drawer-item active" data-view="dashboard">🏠 Dashboard</li>
+        <li class="drawer-item" data-view="members">👥 Members Registry</li>
+        <li class="drawer-item leader-only" data-view="attendance">📷 Attendance Gate Scanner</li>
+        <li class="drawer-item" data-view="passes">🪪 Digital ID Pass (CR80)</li>
+        <li class="drawer-item director-only" data-view="candidate_inbox">📥 Candidate Applications</li>
+        <li class="drawer-item" data-view="profile">👤 My Profile</li>
+        <li class="drawer-item director-only" data-view="settings">⚙️ Cloud System Settings</li>
+        <li class="drawer-item" onclick="window.DBYC_AUTH.logout()" style="color:#f87171; margin-top:16px;">🚪 Sign Out</li>
+      </ul>
+    </aside>
+
+    <!-- Main Dynamic Content Viewport -->
+    <main class="main-viewport">
+
+      <!-- ==========================================
+           VIEW A: DASHBOARD
+           ========================================== -->
+      <section id="view_dashboard" class="app-section active">
+        <!-- Holy Faces Hero Card -->
+        <div class="hero-triptych-card">
+          <img src="assets/icon-192.png" class="holy-face-img mother-mary" alt="Mother Mary">
+          <div class="hero-text-center">
+            <h2>DON BOSCO YOUTH CENTRE</h2>
+            <p>Basin Bridge, Chennai - 600 012</p>
+          </div>
+          <img src="assets/don_bosco.webp" class="holy-face-img don-bosco" alt="Don Bosco">
+        </div>
+
+        <!-- News Ticker -->
+        <div class="news-ticker-bar">
+          <span class="news-badge">LATEST NEWS</span>
+          <div class="news-marquee-text">
+            <span>Welcome to the Official DBYC Master Portal & MIS. 2026-2027 Registrations and ID Passes are active!</span>
+          </div>
+        </div>
+
+        <!-- Metric KPI Cards -->
+        <div class="stats-metrics-grid">
+          <div class="metric-card">
+            <span class="metric-label">Total Members</span>
+            <span class="metric-value" id="metricTotalMembers">206</span>
+          </div>
+          <div class="metric-card">
+            <span class="metric-label">Today's Attendance</span>
+            <span class="metric-value" id="metricTodayAttendance" style="color:#16a34a;">Live</span>
+          </div>
+          <div class="metric-card director-only">
+            <span class="metric-label">Pending Candidates</span>
+            <span class="metric-value" id="metricPendingCandidates" style="color:#f59e0b;">0</span>
+          </div>
+          <div class="metric-card">
+            <span class="metric-label">Emergency Donors</span>
+            <span class="metric-value" style="color:#dc2626;">Blood DB</span>
+          </div>
+        </div>
+
+        <!-- Quick Access App Grid -->
+        <h3 style="font-size:1.05rem; font-weight:800; color:#0f172a; margin-bottom:12px;">Quick Access Modules</h3>
+        <div class="app-actions-grid">
+          <div class="app-tile" onclick="window.DBYC_ROUTER.switchView('members')">
+            <div class="app-tile-icon" style="background:linear-gradient(135deg, #0284c7, #0369a1);">👥</div>
+            <span class="app-tile-title">Members Registry</span>
+          </div>
+
+          <div class="app-tile leader-only" onclick="window.DBYC_ROUTER.switchView('attendance')">
+            <div class="app-tile-icon" style="background:linear-gradient(135deg, #16a34a, #15803d);">📷</div>
+            <span class="app-tile-title">QR Gate Scanner</span>
+          </div>
+
+          <div class="app-tile" onclick="window.DBYC_ROUTER.switchView('passes')">
+            <div class="app-tile-icon" style="background:linear-gradient(135deg, #f59e0b, #d97706);">🪪</div>
+            <span class="app-tile-title">Digital ID Pass</span>
+          </div>
+
+          <div class="app-tile director-only" onclick="window.DBYC_ROUTER.switchView('candidate_inbox')">
+            <div class="app-tile-icon" style="background:linear-gradient(135deg, #8b5cf6, #7c3aed);">📥</div>
+            <span class="app-tile-title">Candidate Inbox</span>
+          </div>
+
+          <div class="app-tile" onclick="window.DBYC_MEMBERS.setFilter('BLOOD'); window.DBYC_ROUTER.switchView('members');">
+            <div class="app-tile-icon" style="background:linear-gradient(135deg, #ef4444, #dc2626);">🩸</div>
+            <span class="app-tile-title">Emergency Donors</span>
+          </div>
+
+          <div class="app-tile director-only" onclick="window.DBYC_APP.openModal('settingsModal')">
+            <div class="app-tile-icon" style="background:linear-gradient(135deg, #475569, #334155);">⚙️</div>
+            <span class="app-tile-title">Cloud Settings</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==========================================
+           VIEW B: MEMBERS DIRECTORY
+           ========================================== -->
+      <section id="view_members" class="app-section">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; flex-wrap:wrap; gap:10px;">
+          <div>
+            <h2 style="font-size:1.25rem; font-weight:800; color:#0f172a; margin:0;">Members Directory</h2>
+            <small style="color:#64748b;" id="membersListCount">206 Members Registered</small>
+          </div>
+          <button onclick="window.DBYC_MEMBERS.exportCSV()" style="background:#f1f5f9; border:1px solid #cbd5e1; border-radius:6px; padding:6px 12px; font-weight:700; font-size:0.8rem; cursor:pointer;">📥 Export CSV</button>
+        </div>
+
+        <!-- Search Bar -->
+        <div style="margin-bottom:12px;">
+          <input type="text" id="memberSearchInput" class="form-input" placeholder="🔍 Search member by Name, ID, Mobile, or Blood Group (e.g. O+, B+)...">
+        </div>
+
+        <!-- Filter Chips -->
+        <div style="display:flex; gap:8px; overflow-x:auto; padding-bottom:8px; margin-bottom:14px;">
+          <button class="filter-chip active" data-filter="ALL" style="padding:5px 14px; border-radius:20px; border:1px solid #cbd5e1; background:#004b98; color:#ffffff; font-weight:700; font-size:0.78rem; cursor:pointer; white-space:nowrap;">All Members</button>
+          <button class="filter-chip" data-filter="SUB" style="padding:5px 14px; border-radius:20px; border:1px solid #cbd5e1; background:#ffffff; font-weight:700; font-size:0.78rem; cursor:pointer; white-space:nowrap;">Sub Juniors</button>
+          <button class="filter-chip" data-filter="JUNIOR" style="padding:5px 14px; border-radius:20px; border:1px solid #cbd5e1; background:#ffffff; font-weight:700; font-size:0.78rem; cursor:pointer; white-space:nowrap;">Juniors</button>
+          <button class="filter-chip" data-filter="SENIOR" style="padding:5px 14px; border-radius:20px; border:1px solid #cbd5e1; background:#ffffff; font-weight:700; font-size:0.78rem; cursor:pointer; white-space:nowrap;">Seniors</button>
+          <button class="filter-chip" data-filter="BLOOD" style="padding:5px 14px; border-radius:20px; border:1px solid #fecaca; background:#fee2e2; color:#dc2626; font-weight:800; font-size:0.78rem; cursor:pointer; white-space:nowrap;">🩸 Emergency Donors</button>
+        </div>
+
+        <!-- Members Grid Container -->
+        <div id="membersGridContainer" class="members-grid-container"></div>
+      </section>
+
+      <!-- ==========================================
+           VIEW C: ATTENDANCE SCANNER
+           ========================================== -->
+      <section id="view_attendance" class="app-section">
+        <div style="text-align:center; max-width:480px; margin:0 auto;">
+          <h2 style="font-size:1.25rem; font-weight:800; color:#0f172a; margin-bottom:4px;">QR Attendance Gate Scanner</h2>
+          <p style="font-size:0.82rem; color:#64748b; margin-bottom:16px;">Scan member ID card QR code for instant check-in</p>
+
+          <!-- Video Stream Box with Scanning Reticle -->
+          <div style="width:100%; max-width:340px; height:280px; margin:0 auto 16px; background:#000000; border-radius:14px; position:relative; overflow:hidden; display:flex; align-items:center; justify-content:center; box-shadow:0 8px 24px rgba(0,0,0,0.35);">
+            <video id="qrScannerVideo" style="width:100%; height:100%; object-fit:cover;"></video>
+            <div style="position:absolute; width:190px; height:190px; border:3px solid #22c55e; border-radius:12px; box-shadow:0 0 0 9999px rgba(0,0,0,0.45); pointer-events:none;"></div>
+          </div>
+
+          <!-- Scanner Controls -->
+          <div style="display:flex; justify-content:center; gap:10px; margin-bottom:20px;">
+            <button onclick="window.DBYC_ATTENDANCE.startScanner()" style="background:#16a34a; color:#ffffff; border:none; border-radius:8px; padding:10px 18px; font-weight:700; cursor:pointer;">▶️ Start Camera</button>
+            <button onclick="window.DBYC_ATTENDANCE.stopScanner()" style="background:#dc2626; color:#ffffff; border:none; border-radius:8px; padding:10px 18px; font-weight:700; cursor:pointer;">⏹️ Stop Camera</button>
+          </div>
+
+          <!-- Manual Check-in Fallback -->
+          <div style="background:#ffffff; border-radius:12px; border:1px solid #e2e8f0; padding:16px; text-align:left;">
+            <h4 style="font-size:0.88rem; font-weight:800; margin-bottom:8px;">Manual ID Check-in</h4>
+            <div style="display:flex; gap:8px;">
+              <input type="text" id="manualCheckInInput" class="form-input" placeholder="e.g. DBYC-2026-SR207">
+              <button onclick="const val=document.getElementById('manualCheckInInput').value; if(val) window.DBYC_ATTENDANCE.recordCheckIn(val);" style="background:#004b98; color:#ffffff; border:none; border-radius:6px; padding:0 18px; font-weight:700; cursor:pointer;">Check In</button>
+            </div>
+            <div style="margin-top:12px; text-align:right;">
+              <button onclick="window.DBYC_ATTENDANCE.syncOfflineQueue()" style="background:none; border:none; color:#0284c7; font-weight:700; font-size:0.8rem; cursor:pointer;">🔄 Sync Offline Queue</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==========================================
+           VIEW D: DIGITAL ID PASSES (CR80 Standard)
+           ========================================== -->
+      <section id="view_passes" class="app-section">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; flex-wrap:wrap; gap:10px;">
+          <div>
+            <h2 style="font-size:1.25rem; font-weight:800; color:#0f172a; margin:0;">Official Digital ID Pass</h2>
+            <small style="color:#64748b;">ISO/IEC 7810 CR-80 Standard (85.6mm × 54mm)</small>
+          </div>
+          <button onclick="window.DBYC_PASSES.printPass()" style="background:#004b98; color:#ffffff; border:none; border-radius:8px; padding:8px 16px; font-weight:700; font-size:0.85rem; cursor:pointer;">🖨️ Print / Save Pass</button>
+        </div>
+
+        <div id="passViewerCard"></div>
+      </section>
+
+      <!-- ==========================================
+           VIEW E: CANDIDATE APPLICATIONS (Director Only)
+           ========================================== -->
+      <section id="view_candidate_inbox" class="app-section director-only">
+        <div style="margin-bottom:16px;">
+          <h2 style="font-size:1.25rem; font-weight:800; color:#0f172a; margin:0;">Candidate Applications Inbox</h2>
+          <small style="color:#64748b;">Review and approve new candidates for DBYC membership</small>
+        </div>
+
+        <div id="candidateInboxContainer"></div>
+      </section>
+
+      <!-- ==========================================
+           VIEW F: MY PROFILE
+           ========================================== -->
+      <section id="view_profile" class="app-section">
+        <div style="max-width:540px; margin:0 auto; background:#ffffff; border-radius:16px; border:1px solid #e2e8f0; padding:24px; box-shadow:0 4px 14px rgba(0,0,0,0.06); text-align:center;">
+          <img src="assets/icon-192.png" style="width:84px; height:84px; border-radius:50%; border:3px solid #004b98; object-fit:cover; margin-bottom:12px;">
+          <h3 style="font-size:1.2rem; font-weight:900; color:#0f172a; margin:0;" id="profileName">DBYC Member</h3>
+          <p style="font-size:0.8rem; color:#64748b; margin-top:2px;" id="profileId">DBYC-2026-MEM</p>
+          
+          <div style="display:flex; justify-content:center; gap:8px; margin:16px 0;">
+            <button onclick="window.DBYC_ROUTER.switchView('passes')" style="background:#e0f2fe; color:#0369a1; border:none; border-radius:8px; padding:8px 16px; font-weight:700; font-size:0.85rem; cursor:pointer;">View My ID Pass</button>
+            <button onclick="window.DBYC_APP.openModal('changePinModal')" style="background:#f1f5f9; border:1px solid #cbd5e1; border-radius:8px; padding:8px 16px; font-weight:700; font-size:0.85rem; cursor:pointer;">Change PIN</button>
+          </div>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- Bottom Navigation Bar (Smartphones & Mobile Screens) -->
+    <nav class="bottom-nav-bar">
+      <button class="bottom-nav-tab active" data-view="dashboard">
+        <span class="bottom-nav-tab-icon">🏠</span>
+        <span>Home</span>
+      </button>
+
+      <button class="bottom-nav-tab" data-view="members">
+        <span class="bottom-nav-tab-icon">👥</span>
+        <span>Directory</span>
+      </button>
+
+      <button class="bottom-nav-tab leader-only" data-view="attendance">
+        <span class="bottom-nav-tab-icon">📷</span>
+        <span>Scanner</span>
+      </button>
+
+      <button class="bottom-nav-tab" data-view="passes">
+        <span class="bottom-nav-tab-icon">🪪</span>
+        <span>Pass</span>
+      </button>
+
+      <button class="bottom-nav-tab" data-view="profile">
+        <span class="bottom-nav-tab-icon">👤</span>
+        <span>Profile</span>
+      </button>
+    </nav>
+
+  </div>
+
+
+  <!-- ==============================================================================
+       MODALS & DIALOGS
+       ============================================================================== -->
+
+  <!-- 1. Public Candidate Registration Application Modal -->
+  <div id="publicApplyModal" class="modal-overlay">
+    <div class="modal-container">
+      <div class="modal-header">
+        <h3 class="modal-title">New Candidate Registration (2026)</h3>
+        <button class="modal-close-btn" onclick="window.DBYC_APP.closeModal('publicApplyModal')">&times;</button>
+      </div>
+
+      <form id="publicApplyForm">
+        <div class="form-group">
+          <label class="form-label">Full Name *</label>
+          <input type="text" id="candName" class="form-input" placeholder="Candidate Name" required>
+        </div>
+
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+          <div class="form-group">
+            <label class="form-label">Mobile Number *</label>
+            <input type="tel" id="candMobile" class="form-input" placeholder="10-digit phone" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Email</label>
+            <input type="email" id="candEmail" class="form-input" placeholder="Email (optional)">
+          </div>
+        </div>
+
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+          <div class="form-group">
+            <label class="form-label">Date of Birth</label>
+            <input type="date" id="candDob" class="form-input">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Blood Group *</label>
+            <select id="candBlood" class="form-select">
+              <option value="O+">O+</option>
+              <option value="O-">O-</option>
+              <option value="A+">A+</option>
+              <option value="A-">A-</option>
+              <option value="B+">B+</option>
+              <option value="B-">B-</option>
+              <option value="AB+">AB+</option>
+              <option value="AB-">AB-</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Category / Group</label>
+          <select id="candGroup" class="form-select">
+            <option value="Sub Juniors Group">Sub Juniors Group</option>
+            <option value="Junior Group">Junior Group</option>
+            <option value="Senior Group" selected>Senior Group</option>
+            <option value="Elders Group">Elders Group</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Candidate Photo (< 35KB auto-compressed)</label>
+          <input type="file" id="candPhotoInput" accept="image/*" class="form-input">
+          <img id="candPhotoPreview" style="display:none; width:70px; height:70px; border-radius:50%; object-fit:cover; margin-top:8px; border:2px solid #004b98;">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Education / School / College</label>
+          <input type="text" id="candEducation" class="form-input" placeholder="Current Education">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Future Ambition</label>
+          <input type="text" id="candAmbition" class="form-input" placeholder="e.g. Engineer, Sportsman">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Residential Address</label>
+          <textarea id="candAddress" class="form-textarea" rows="2" placeholder="Home Address"></textarea>
+        </div>
+
+        <button type="submit" class="login-btn-primary" style="margin-top:10px;">Submit Application to Director</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- 2. Mandatory Change PIN Modal -->
+  <div id="changePinModal" class="modal-overlay">
+    <div class="modal-container">
+      <div class="modal-header">
+        <h3 class="modal-title">Security PIN Update</h3>
+      </div>
+      <p id="changePinNotice" style="font-size:0.82rem; color:#b45309; background:#fef3c7; padding:8px 12px; border-radius:6px; margin-bottom:14px;" class="hidden"></p>
+
+      <div class="form-group">
+        <label class="form-label">Current / Temporary PIN *</label>
+        <input type="password" id="currentPinField" class="form-input" placeholder="Current PIN">
+      </div>
+      <div class="form-group">
+        <label class="form-label">New Personal PIN (4–8 Digits) *</label>
+        <input type="password" id="newPinField" class="form-input" placeholder="New PIN">
+      </div>
+      <button onclick="window.DBYC_AUTH.changePin(document.getElementById('currentPinField').value, document.getElementById('newPinField').value)" class="login-btn-primary">Save New Security PIN</button>
+    </div>
+  </div>
+
+  <!-- 3. Cloud Settings Modal (Google Apps Script Endpoint) -->
+  <div id="settingsModal" class="modal-overlay director-only">
+    <div class="modal-container">
+      <div class="modal-header">
+        <h3 class="modal-title">Google Apps Script Web App Endpoint</h3>
+        <button class="modal-close-btn" onclick="window.DBYC_APP.closeModal('settingsModal')">&times;</button>
+      </div>
+      <p style="font-size:0.82rem; color:#64748b; margin-bottom:12px;">Paste your deployed Google Apps Script Web App URL (`https://script.google.com/macros/s/AKfycby4XiCX2GU4LUCZZj8EqaCtK1dF1yghM7S1_15r6c9FSjU9HaldhEpTqIkuA37KYi5E/exec`):</p>
+      <div class="form-group">
+        <input type="url" id="settingsEndpointInput" class="form-input" placeholder="https://script.google.com/macros/s/AKfycby4XiCX2GU4LUCZZj8EqaCtK1dF1yghM7S1_15r6c9FSjU9HaldhEpTqIkuA37KYi5E/exec">
+      </div>
+      <button onclick="window.DBYC_APP.saveSettingsEndpoint()" class="login-btn-primary">Save Endpoint</button>
+    </div>
+  </div>
+
+  <!-- Master Toast System -->
+  <div id="appToast">Notification Message</div>
+
+  <!-- ==============================================================================
+       VENDOR & MODULAR APPLICATION SCRIPTS
+       ============================================================================== -->
+  <script src="js/vendor/jsqr.min.js"></script>
+  <script src="js/config.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/router.js"></script>
+  <script src="js/members.js"></script>
+  <script src="js/candidate.js"></script>
+  <script src="js/attendance.js"></script>
+  <script src="js/passes.js"></script>
+  <script src="js/app.js"></script>
+
+</body>
+</html>
